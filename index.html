@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PajakKita Pro V3.1 - Kalkulator & Learning Media Perpajakan (Batik Edition)</title>
+    
+    <!-- PWA Meta Tags & Manifest -->
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PajakKita Pro">
+    
+    <!-- Dynamic Manifest Injection via Data URI -->
+    <link rel="manifest" href='data:application/manifest+json,{
+        "name": "PajakKita Pro V3.1",
+        "short_name": "PajakKita",
+        "description": "Kalkulator & Media Pembelajaran Pajak SMK Akuntansi",
+        "start_url": "./",
+        "display": "standalone",
+        "background_color": "#0f172a",
+        "theme_color": "#0f172a",
+        "icons": [
+            {
+                "src": "https://placehold.co/192x192/0f172a/84cc16?text=PKP",
+                "sizes": "192x192",
+                "type": "image/png"
+            },
+            {
+                "src": "https://placehold.co/512x512/0f172a/84cc16?text=PKP",
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    }'>
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: '#0f172a',
+                        bone: '#f8fafc',
+                        lime: '#84cc16',
+                        'lime-hover': '#65a30d',
+                        batikdark: '#1e293b'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Courier New', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            touch-action: pan-y;
+            overflow-x: hidden;
+        }
+        
+        /* Modern Batik Subtle Background Pattern */
+        .batik-pattern {
+            background-color: #0f172a;
+            background-image: radial-gradient(#334155 0.75px, transparent 0.75px), radial-gradient(#334155 0.75px, #0f172a 0.75px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+        }
+
+        .batik-card-header {
+            background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%), 
+                              repeating-linear-gradient(45deg, rgba(132, 204, 22, 0.03) 0, rgba(132, 204, 22, 0.03) 10px, transparent 0, transparent 20px);
+        }
+
+        /* Buku Catatan Akuntansi Style */
+        .notebook-step {
+            background-color: #ffffff;
+            background-image: linear-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 100% 1.8rem;
+            border-left: 4px solid #84cc16;
+        }
+
+        .fade-in { animation: fadeIn 0.25s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Smooth Horizontal Slide Transitions */
+        .tab-slide-left { animation: slideLeft 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        .tab-slide-right { animation: slideRight 0.22s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+
+        @keyframes slideLeft {
+            from { opacity: 0.3; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideRight {
+            from { opacity: 0.3; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .toast-enter { animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .toast-leave { animation: fadeOut 0.2s ease-in forwards; }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(100%); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        .hidden-element { display: none !important; }
+        button, select, input { touch-action: manipulation; }
+    </style>
+</head>
+<body class="bg-bone text-slate-800 min-h-screen flex flex-col selection:bg-lime selection:text-navy">
+
+    <!-- Mobile-Optimized Navbar / Header with Modern Batik Theme -->
+    <nav class="batik-pattern text-bone shadow-md sticky top-0 z-40 border-b border-slate-800">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2.5 cursor-pointer" onclick="Navigation.switchTab('home')">
+                    <div class="w-9 h-9 bg-lime rounded-xl flex items-center justify-center text-navy font-extrabold text-xl shadow border border-lime-400">P</div>
+                    <div>
+                        <span class="font-bold text-base tracking-tight block leading-tight">PajakKita <span class="text-lime">Pro V3.1</span></span>
+                        <span class="text-[9px] text-slate-400 block tracking-wider uppercase font-medium">Batik Edition & Education</span>
+                    </div>
+                </div>
+                <!-- Desktop Nav Links & Install Button -->
+                <div id="nav-links" class="hidden md:flex space-x-4 items-center text-sm font-medium">
+                    <button onclick="Navigation.switchTab('home')" id="nav-home" class="transition-colors hover:text-lime text-lime font-semibold">Beranda</button>
+                    <button onclick="Navigation.switchTab('pph21')" id="nav-pph21" class="transition-colors hover:text-lime text-slate-300">PPh 21</button>
+                    <button onclick="Navigation.switchTab('pph22')" id="nav-pph22" class="transition-colors hover:text-lime text-slate-300">PPh 22</button>
+                    <button onclick="Navigation.switchTab('pph23')" id="nav-pph23" class="transition-colors hover:text-lime text-slate-300">PPh 23</button>
+                    <button onclick="Navigation.switchTab('guide')" id="nav-guide" class="transition-colors hover:text-lime text-slate-300">Panduan</button>
+                    
+                    <button id="btn-install-desktop" onclick="PWAInstaller.promptInstall()" class="hidden-element bg-lime/20 border border-lime text-lime hover:bg-lime hover:text-navy px-3 py-1.5 rounded-xl text-xs font-bold transition-all items-center gap-1.5">
+                        📥 Install App
+                    </button>
+                    <button id="btn-logout" class="hidden-element text-xs bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg hover:bg-red-900/50 hover:text-red-300 transition-all">Keluar</button>
+                </div>
+                <!-- Mobile Install Button Header Right -->
+                <div class="flex items-center gap-2 md:hidden">
+                    <button id="btn-install-mobile" onclick="PWAInstaller.promptInstall()" class="hidden-element bg-lime text-navy px-2.5 py-1 rounded-lg text-[10px] font-extrabold shadow">
+                        Install App
+                    </button>
+                    <button id="btn-logout-mob" onclick="AppState.logout()" class="hidden-element text-[10px] bg-slate-800 text-slate-300 px-2 py-1 rounded-lg border border-slate-700">Keluar</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex flex-col items-center justify-start p-3 sm:p-6 max-w-5xl mx-auto w-full pb-24 md:pb-8">
+        
+        <!-- Auth View -->
+        <div id="view-auth" class="w-full max-w-md bg-white rounded-3xl shadow-xl p-6 sm:p-8 border border-slate-100 fade-in my-auto hidden-element">
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 batik-card-header text-lime rounded-2xl flex items-center justify-center mx-auto mb-3 font-bold text-2xl shadow-inner border border-slate-700">P</div>
+                <h2 class="text-2xl font-bold text-navy tracking-tight">Masuk PajakKita Pro</h2>
+                <p class="text-slate-500 mt-1.5 text-xs sm:text-sm">Kalkulator & Media Pembelajaran Perpajakan Terpadu SMK Akuntansi.</p>
+            </div>
+            <form id="form-auth" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Nama Pengguna / Instansi / Siswa</label>
+                    <input type="text" id="input-username" required class="w-full px-4 py-3 bg-bone border border-slate-300 rounded-2xl focus:ring-2 focus:ring-lime focus:border-lime outline-none transition-all text-sm font-medium" placeholder="Contoh: Budi Santoso (SMK 1)">
+                </div>
+                <button type="submit" class="w-full bg-lime hover:bg-lime-hover text-navy font-bold py-3.5 rounded-2xl shadow-md transition-all flex justify-center items-center gap-2 text-sm active:scale-[0.98]">
+                    Mulai Aplikasi
+                </button>
+            </form>
+
+            <!-- PWA Install Banner inside Auth -->
+            <div id="pwa-install-banner" class="mt-6 p-4 bg-bone rounded-2xl border border-slate-200 hidden-element text-center space-y-2">
+                <span class="text-xs font-bold text-navy block">📱 Ingin Akses Lebih Mudah?</span>
+                <p class="text-[11px] text-slate-500 leading-relaxed">Install aplikasi ini di Layar Utama HP / PC Anda tanpa perlu membuka browser lagi.</p>
+                <button type="button" onclick="PWAInstaller.promptInstall()" class="w-full bg-navy text-lime hover:bg-slate-800 font-bold py-2.5 rounded-xl text-xs transition-all shadow">
+                    Install PajakKita Pro Sekarang
+                </button>
+            </div>
+        </div>
+
+        <!-- App Container (Protected) -->
+        <div id="view-app" class="w-full hidden-element flex flex-col gap-6">
+
+            <!-- TAB 1: HOME -->
+            <div id="tab-home" class="tab-content fade-in space-y-6">
+                <div class="batik-card-header text-bone rounded-3xl p-6 sm:p-10 shadow-xl flex flex-col items-center text-center relative overflow-hidden border border-slate-700">
+                    <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-lime/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <span class="bg-lime/20 text-lime text-[11px] font-semibold px-3 py-1 rounded-full mb-3 uppercase tracking-wider border border-lime/30">Kalkulator & Learning Media Perpajakan SMK Akuntansi</span>
+                    <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3 text-white">Pilih Modul Perhitungan & Langkah Pengerjaan</h1>
+                    <p class="text-slate-300 max-w-xl text-xs sm:text-sm mb-6 leading-relaxed">Pilih modul pajak di bawah ini untuk memulai simulasi perhitungan lengkap dengan <strong>Langkah Pengerjaan Catatan Akuntansi Bertahap</strong> dan Jurnal Otomatis.</p>
+                </div>
+
+                <!-- Modul Cards Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div onclick="Navigation.switchTab('pph21')" class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:border-lime transition-all cursor-pointer group flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center font-bold text-lg mb-4 group-hover:bg-lime group-hover:text-navy transition-colors">👤</div>
+                            <span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2.5 py-1 rounded-full uppercase">Karyawan / Single & Multi</span>
+                            <h3 class="font-bold text-navy text-lg mt-2 mb-1">PPh Pasal 21</h3>
+                            <p class="text-xs text-slate-500 leading-relaxed">Perhitungan satu/banyak karyawan dengan rincian langkah pengerjaan bertahap dari Bruto hingga PKP.</p>
+                        </div>
+                        <div class="mt-6 flex items-center gap-1 text-xs font-bold text-blue-600 group-hover:text-lime-hover">
+                            Buka Modul &rarr;
+                        </div>
+                    </div>
+
+                    <div onclick="Navigation.switchTab('pph22')" class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:border-lime transition-all cursor-pointer group flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center font-bold text-lg mb-4 group-hover:bg-lime group-hover:text-navy transition-colors">📦</div>
+                            <span class="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1 rounded-full uppercase">Barang, Kurs & PPN 11%</span>
+                            <h3 class="font-bold text-navy text-lg mt-2 mb-1">PPh Pasal 22</h3>
+                            <p class="text-xs text-slate-500 leading-relaxed">Simulasi impor valas dengan Kurs Otomatis/Manual, PPN 11%, dan Dual Jurnal Pembeli/Penjual.</p>
+                        </div>
+                        <div class="mt-6 flex items-center gap-1 text-xs font-bold text-emerald-600 group-hover:text-lime-hover">
+                            Buka Modul &rarr;
+                        </div>
+                    </div>
+
+                    <div onclick="Navigation.switchTab('pph23')" class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:border-lime transition-all cursor-pointer group flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center font-bold text-lg mb-4 group-hover:bg-lime group-hover:text-navy transition-colors">🤝</div>
+                            <span class="text-[10px] bg-amber-100 text-amber-700 font-bold px-2.5 py-1 rounded-full uppercase">Jasa & Sewa Harta</span>
+                            <h3 class="font-bold text-navy text-lg mt-2 mb-1">PPh Pasal 23</h3>
+                            <p class="text-xs text-slate-500 leading-relaxed">Pemotongan jasa, sewa, dividen, royalti, langkah pengerjaan bersih, dan Jurnal Pemotong vs Vendor.</p>
+                        </div>
+                        <div class="mt-6 flex items-center gap-1 text-xs font-bold text-amber-600 group-hover:text-lime-hover">
+                            Buka Modul &rarr;
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: PPH 21 CALCULATOR -->
+            <div id="tab-pph21" class="tab-content fade-in hidden-element space-y-4">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 sm:p-8">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
+                        <div>
+                            <span class="text-[10px] text-blue-600 font-bold uppercase tracking-wider block">Modul 1</span>
+                            <h2 class="text-lg sm:text-xl font-bold text-navy">Kalkulator & Langkah Pengerjaan PPh 21</h2>
+                        </div>
+                        <button onclick="Navigation.switchTab('home')" class="text-xs text-slate-400 hover:text-slate-600">&larr; Menu</button>
+                    </div>
+
+                    <!-- Mode Perhitungan Selection -->
+                    <div class="bg-bone p-4 rounded-2xl border border-slate-200 mb-6">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">Pilih Mode Perhitungan Karyawan:</label>
+                        <div class="flex items-center gap-6">
+                            <label class="flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-800">
+                                <input type="radio" name="p21-count-mode" value="single" checked onchange="UI.switchP21CountMode('single')" class="w-4 h-4 text-lime focus:ring-lime">
+                                <span>Satu Karyawan (Default)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer text-sm font-medium text-slate-800">
+                                <input type="radio" name="p21-count-mode" value="multi" onchange="UI.switchP21CountMode('multi')" class="w-4 h-4 text-lime focus:ring-lime">
+                                <span>Beberapa Karyawan</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <form id="form-pph21" class="space-y-6">
+                        <!-- Container Input Karyawan (Vertikal) -->
+                        <div id="p21-karyawan-container" class="space-y-6">
+                            <!-- Card Karyawan Di-render Otomatis -->
+                        </div>
+
+                        <!-- Tombol Tambah Karyawan (Mode Multi Only) -->
+                        <div id="p21-add-more-wrapper" class="hidden-element">
+                            <button type="button" onclick="UI.addP21EmployeeCard()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-2xl border border-dashed border-slate-300 transition-all text-xs flex items-center justify-center gap-2">
+                                ➕ Tambah Data Karyawan
+                            </button>
+                        </div>
+
+                        <button type="submit" class="w-full bg-lime hover:bg-lime-hover text-navy font-bold py-3.5 rounded-2xl shadow transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-sm mt-2">
+                            Hitung & Tampilkan Langkah Pengerjaan
+                        </button>
+                    </form>
+                </div>
+
+                <!-- PPh 21 Results Container (Vertikal per karyawan) -->
+                <div id="res-pph21" class="space-y-6 hidden-element">
+                    <!-- Cards Rincian & Langkah Pengerjaan Per Karyawan Dihasilkan Otomatis -->
+                </div>
+            </div>
+
+            <!-- TAB 3: PPH 22 CALCULATOR -->
+            <div id="tab-pph22" class="tab-content fade-in hidden-element space-y-4">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 sm:p-8">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
+                        <div>
+                            <span class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider block">Modul 2</span>
+                            <h2 class="text-lg sm:text-xl font-bold text-navy">Kalkulator PPh 22, Valas & PPN 11%</h2>
+                        </div>
+                        <button onclick="Navigation.switchTab('home')" class="text-xs text-slate-400 hover:text-slate-600">&larr; Menu</button>
+                    </div>
+
+                    <form id="form-pph22" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Jenis Transaksi PPh 22</label>
+                            <select id="p22-jenis" onchange="UI.toggleP22Form()" class="w-full px-3.5 py-3 bg-bone border border-slate-300 rounded-2xl text-sm focus:ring-2 focus:ring-lime focus:border-lime outline-none">
+                                <option value="impor">1. Impor Barang (IDR/Valas, CIF, Bea Masuk, PPN)</option>
+                                <option value="bendahara">2. Pembelian oleh Bendahara Pemerintah / BUMN / BUMD (1.5%)</option>
+                                <option value="semen">3. Penjualan Hasil Produksi Industri Semen (0.25%)</option>
+                                <option value="kertas">4. Penjualan Hasil Produksi Industri Kertas (0.1%)</option>
+                                <option value="baja">5. Penjualan Hasil Produksi Industri Baja (0.3%)</option>
+                                <option value="otomotif">6. Penjualan Hasil Produksi Industri Otomotif (0.45%)</option>
+                                <option value="farmasi">7. Penjualan Hasil Produksi Industri Farmasi (0.3%)</option>
+                                <option value="migas">8. Penjualan Bahan Bakar Minyak (BBM), Gas & Pelumas</option>
+                                <option value="pertanian">9. Pembelian Bahan Pertanian/Perkebunan dari Pedagang Pengumpul (0.25%)</option>
+                            </select>
+                        </div>
+
+                        <!-- Form Impor Khusus -->
+                        <div id="container-form-impor" class="space-y-4 p-4 bg-bone rounded-2xl border border-slate-200">
+                            <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                                <span class="text-xs font-bold text-navy uppercase tracking-wider">Parameter Impor / Valas</span>
+                                <span id="p22-kurs-info" class="text-[10px] text-slate-500 font-medium">Auto-fetching kurs...</span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Mata Uang Asing</label>
+                                    <select id="p22-valas" onchange="UI.handleValasChange()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm">
+                                        <option value="IDR" selected>IDR (Rupiah Domestik)</option>
+                                        <option value="USD">USD (Dolar AS)</option>
+                                        <option value="SAR">SAR (Riyal Arab)</option>
+                                        <option value="CNY">CNY (Yuan Tiongkok)</option>
+                                        <option value="RUB">RUB (Rubel Rusia)</option>
+                                        <option value="JPY">JPY (Yen Jepang)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Harga Barang (IDR / Valas)</label>
+                                    <input type="text" inputmode="numeric" id="p22-harga-valas" class="currency-input w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm" placeholder="100.000">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="block text-[11px] font-semibold text-slate-600">Kurs Pajak (Rp)</label>
+                                        <span class="text-[9px] text-blue-600 font-bold uppercase">(Dapat Di-edit Manual)</span>
+                                    </div>
+                                    <input type="text" inputmode="numeric" id="p22-kurs" value="1" class="currency-input w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-navy">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Asuransi (%)</label>
+                                    <input type="number" id="p22-asuransi-pct" min="0" step="0.1" value="0" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Freight / Angkut (%)</label>
+                                    <input type="number" id="p22-freight-pct" min="0" step="0.1" value="0" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Bea Masuk (%)</label>
+                                    <input type="number" id="p22-bm-pct" min="0" step="0.1" value="10" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Transaksi Non-Impor -->
+                        <div id="container-form-lokal" class="hidden-element space-y-4 p-4 bg-bone rounded-2xl border border-slate-200">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Nilai Transaksi DPP (Rp)</label>
+                            <input type="text" inputmode="numeric" id="p22-dpp-lokal" class="currency-input w-full px-3.5 py-3 bg-white border border-slate-300 rounded-2xl text-sm" placeholder="Contoh: 50.000.000">
+                        </div>
+
+                        <!-- Checkbox PPN 11% & Opsi Tambahan -->
+                        <div class="bg-bone p-4 rounded-2xl border border-slate-200 space-y-3">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="p22-use-ppn" checked class="w-4 h-4 text-lime rounded border-slate-300 focus:ring-lime">
+                                <label for="p22-use-ppn" class="text-xs font-bold text-navy">Hitung PPN 11% (Ditampilkan terpisah dari PPh 22)</label>
+                            </div>
+                            <div id="wrapper-api" class="flex items-center gap-3 pt-1 border-t border-slate-200/60">
+                                <input type="checkbox" id="p22-api" checked class="w-4 h-4 text-lime rounded border-slate-300 focus:ring-lime">
+                                <label for="p22-api" class="text-xs font-medium text-slate-700">Memiliki API (Angka Pengenal Impor) &mdash; Tarif 2.5% (Tanpa API 7.5%)</label>
+                            </div>
+                            <div class="flex items-center gap-3 border-t border-slate-200/60 pt-2">
+                                <input type="checkbox" id="p22-nonpwp" class="w-4 h-4 text-lime rounded border-slate-300 focus:ring-lime">
+                                <label for="p22-nonpwp" class="text-xs font-medium text-slate-700">Tidak Ber-NPWP (Tarif naik 100% / Menjadi 2x lipat)</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-lime hover:bg-lime-hover text-navy font-bold py-3.5 rounded-2xl shadow transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-sm mt-2">
+                            Hitung & Tampilkan Langkah Pengerjaan
+                        </button>
+                    </form>
+                </div>
+
+                <!-- PPh 22 Results -->
+                <div id="res-pph22" class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 sm:p-8 hidden-element fade-in space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <h3 class="text-base sm:text-lg font-bold text-navy">Hasil Perhitungan PPh 22 & PPN 11%</h3>
+                        <span id="p22-badge-jenis" class="bg-emerald-100 text-emerald-800 font-bold text-[11px] px-3 py-1 rounded-full uppercase">Impor Barang</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <div class="p-3.5 bg-bone rounded-2xl border border-slate-200">
+                            <span class="text-[11px] text-slate-500 block mb-1 uppercase tracking-wider">Dasar Pengenaan Pajak (DPP)</span>
+                            <span id="p22-out-dasar" class="text-base font-bold text-navy">Rp 0</span>
+                        </div>
+                        <div class="p-3.5 bg-bone rounded-2xl border border-slate-200">
+                            <span class="text-[11px] text-slate-500 block mb-1 uppercase tracking-wider">Tarif PPh 22</span>
+                            <span id="p22-out-tarif" class="text-base font-bold text-emerald-600">2.5%</span>
+                        </div>
+                        <div class="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-100">
+                            <span class="text-[11px] text-emerald-700 block mb-1 uppercase tracking-wider font-semibold">Nominal PPh 22</span>
+                            <span id="p22-out-pajak" class="text-base font-bold text-emerald-700">Rp 0</span>
+                        </div>
+                        <div class="p-3.5 bg-blue-50 rounded-2xl border border-blue-100">
+                            <span class="text-[11px] text-blue-700 block mb-1 uppercase tracking-wider font-semibold">Nominal PPN 11%</span>
+                            <span id="p22-out-ppn" class="text-base font-bold text-blue-700">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-navy text-bone rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                            <span class="text-[11px] text-slate-300 block uppercase tracking-wider">Total Kas / Pembayaran Termasuk Pajak & PPN</span>
+                            <span id="p22-out-total" class="text-xl sm:text-2xl font-extrabold text-lime">Rp 0</span>
+                        </div>
+                        <button onclick="TaxEngine.copyResult('pph22')" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-bone text-xs px-4 py-2.5 rounded-xl border border-slate-700 transition-colors active:scale-[0.98]">
+                            Salin Hasil
+                        </button>
+                    </div>
+
+                    <!-- Dual Jurnal Tables PPh 22 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <span class="text-xs font-bold text-navy uppercase tracking-wider block">1. Jurnal Pihak Pembeli / Pemungut</span>
+                            <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                                <table class="w-full text-xs text-left">
+                                    <thead class="bg-slate-50 text-slate-500 border-b">
+                                        <tr>
+                                            <th class="p-2.5">Keterangan Akun</th>
+                                            <th class="p-2.5 text-right">Debit (Rp)</th>
+                                            <th class="p-2.5 text-right">Kredit (Rp)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="p22-journal-pembeli" class="divide-y divide-slate-100 font-mono text-[11px]"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <span class="text-xs font-bold text-navy uppercase tracking-wider block">2. Jurnal Pihak Penjual / Dipungut</span>
+                            <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                                <table class="w-full text-xs text-left">
+                                    <thead class="bg-slate-50 text-slate-500 border-b">
+                                        <tr>
+                                            <th class="p-2.5">Keterangan Akun</th>
+                                            <th class="p-2.5 text-right">Debit (Rp)</th>
+                                            <th class="p-2.5 text-right">Kredit (Rp)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="p22-journal-penjual" class="divide-y divide-slate-100 font-mono text-[11px]"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LANGKAH PENGERJAAN PPH 22 -->
+                    <div class="space-y-3 pt-4 border-t border-slate-200">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-lime rounded-full"></div>
+                            <h4 class="text-sm font-bold text-navy uppercase tracking-wider">Langkah Pengerjaan Catatan Akuntansi PPh 22</h4>
+                        </div>
+                        <div id="p22-steps-container" class="space-y-3">
+                            <!-- Diisi dinamis oleh JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: PPH 23 CALCULATOR -->
+            <div id="tab-pph23" class="tab-content fade-in hidden-element space-y-4">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 sm:p-8">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-5">
+                        <div>
+                            <span class="text-[10px] text-amber-600 font-bold uppercase tracking-wider block">Modul 3</span>
+                            <h2 class="text-lg sm:text-xl font-bold text-navy">Kalkulator & Langkah Pengerjaan PPh 23</h2>
+                        </div>
+                        <button onclick="Navigation.switchTab('home')" class="text-xs text-slate-400 hover:text-slate-600">&larr; Menu</button>
+                    </div>
+
+                    <form id="form-pph23" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Objek Penghasilan PPh 23</label>
+                                <select id="p23-jenis" class="w-full px-3.5 py-3 bg-bone border border-slate-300 rounded-2xl text-sm focus:ring-2 focus:ring-lime focus:border-lime outline-none">
+                                    <option value="jasa_konsultan">Jasa Konsultan / Teknik / Manajemen (2%)</option>
+                                    <option value="sewa_kendaraan">Sewa Kendaraan Operasional / Harta (2%)</option>
+                                    <option value="dividen">Dividen (15%)</option>
+                                    <option value="bunga">Bunga & Royalti (15%)</option>
+                                    <option value="hadiah">Hadiah & Penghargaan (15%)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Jumlah Bruto Penghasilan (Rp)</label>
+                                <input type="text" inputmode="numeric" id="p23-bruto" required class="currency-input w-full px-3.5 py-3 bg-bone border border-slate-300 rounded-2xl text-sm focus:ring-2 focus:ring-lime outline-none" placeholder="Contoh: 15.000.000">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 pt-1">
+                            <input type="checkbox" id="p23-nonpwp" class="w-4 h-4 text-lime rounded border-slate-300 focus:ring-lime">
+                            <label for="p23-nonpwp" class="text-xs font-medium text-slate-700">Penerima TIDAK Memiliki NPWP (Tarif naik 100% / Menjadi 2x lipat)</label>
+                        </div>
+
+                        <button type="submit" class="w-full bg-lime hover:bg-lime-hover text-navy font-bold py-3.5 rounded-2xl shadow transition-all flex items-center justify-center gap-2 active:scale-[0.98] text-sm mt-2">
+                            Hitung & Tampilkan Langkah Pengerjaan
+                        </button>
+                    </form>
+                </div>
+
+                <!-- PPh 23 Results -->
+                <div id="res-pph23" class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 sm:p-8 hidden-element fade-in space-y-6">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <h3 class="text-base sm:text-lg font-bold text-navy">Hasil Pemotongan PPh 23 & Jurnal Lengkap</h3>
+                        <span id="p23-badge-npwp" class="bg-amber-100 text-amber-800 font-bold text-[11px] px-3 py-1 rounded-full uppercase">Memiliki NPWP</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="p-3.5 bg-bone rounded-2xl border border-slate-200">
+                            <span class="text-[11px] text-slate-500 block mb-1 uppercase tracking-wider">Jumlah Bruto</span>
+                            <span id="p23-out-bruto" class="text-base sm:text-lg font-bold text-navy">Rp 0</span>
+                        </div>
+                        <div class="p-3.5 bg-bone rounded-2xl border border-slate-200">
+                            <span class="text-[11px] text-slate-500 block mb-1 uppercase tracking-wider">Tarif PPh 23</span>
+                            <span id="p23-out-tarif" class="text-base sm:text-lg font-bold text-amber-600">2%</span>
+                        </div>
+                        <div class="p-3.5 bg-amber-50 rounded-2xl border border-amber-100">
+                            <span class="text-[11px] text-amber-700 block mb-1 uppercase tracking-wider font-semibold">Nominal PPh 23</span>
+                            <span id="p23-out-pajak" class="text-base sm:text-lg font-bold text-amber-700">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-navy text-bone rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                            <span class="text-[11px] text-slate-300 block uppercase tracking-wider">Kas Bersih Diterima Penyedia Jasa</span>
+                            <span id="p23-out-netto" class="text-xl sm:text-2xl font-extrabold text-lime">Rp 0</span>
+                        </div>
+                        <button onclick="TaxEngine.copyResult('pph23')" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-bone text-xs px-4 py-2.5 rounded-xl border border-slate-700 transition-colors active:scale-[0.98]">
+                            Salin Hasil
+                        </button>
+                    </div>
+
+                    <!-- Dual Jurnal Tables PPh 23 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <span class="text-xs font-bold text-navy uppercase tracking-wider block">Jurnal Pihak Pemotong (Klien)</span>
+                            <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                                <table class="w-full text-xs text-left">
+                                    <thead class="bg-slate-50 text-slate-500 border-b">
+                                        <tr>
+                                            <th class="p-2.5">Keterangan Akun</th>
+                                            <th class="p-2.5 text-right">Debit</th>
+                                            <th class="p-2.5 text-right">Kredit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="p23-journal-pemotong" class="divide-y divide-slate-100 font-mono text-[11px]"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <span class="text-xs font-bold text-navy uppercase tracking-wider block">Jurnal Pihak yang Dipotong (Vendor)</span>
+                            <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                                <table class="w-full text-xs text-left">
+                                    <thead class="bg-slate-50 text-slate-500 border-b">
+                                        <tr>
+                                            <th class="p-2.5">Keterangan Akun</th>
+                                            <th class="p-2.5 text-right">Debit</th>
+                                            <th class="p-2.5 text-right">Kredit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="p23-journal-dipotong" class="divide-y divide-slate-100 font-mono text-[11px]"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LANGKAH PENGERJAAN PPH 23 -->
+                    <div class="space-y-3 pt-4 border-t border-slate-200">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-lime rounded-full"></div>
+                            <h4 class="text-sm font-bold text-navy uppercase tracking-wider">Langkah Pengerjaan Catatan Akuntansi PPh 23</h4>
+                        </div>
+                        <div id="p23-steps-container" class="space-y-3">
+                            <!-- Diisi dinamis oleh JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: GUIDE -->
+            <div id="tab-guide" class="tab-content fade-in hidden-element space-y-4">
+                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 sm:p-8 space-y-5">
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-bold text-navy">Panduan Rumus & Catatan Perkuliahan / SMK</h2>
+                        <p class="text-xs sm:text-sm text-slate-600 mt-1">Referensi materi akuntansi perpajakan untuk siswa pemula.</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="p-4 bg-bone rounded-2xl border border-slate-200 space-y-2">
+                            <h3 class="font-bold text-blue-700 text-sm">👤 PPh Pasal 21 (Pegawai Tetap)</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed">Penghasilan Bruto Setahun dikurangi Biaya Jabatan (5% maks Rp6.000.000/tahun) dan Iuran Pensiun. Hasilnya dinamakan Penghasilan Netto, lalu dikurangi PTKP untuk mendapatkan PKP. PPh 21 Terutang dihitung menggunakan Tarif Progresif Pasal 17.</p>
+                        </div>
+
+                        <div class="p-4 bg-bone rounded-2xl border border-slate-200 space-y-2">
+                            <h3 class="font-bold text-emerald-700 text-sm">📦 PPh Pasal 22 (Impor / Pembelian Barang)</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed">Nilai Impor (CIF + Bea Masuk) menjadi Dasar Pengenaan Pajak (DPP). PPh 22 Impor berkisar 2,5% (API) atau 7.5% (Non-API). Jika PPN 11% diaktifkan, PPN dihitung dari DPP secara terpisah dari PPh 22.</p>
+                        </div>
+
+                        <div class="p-4 bg-bone rounded-2xl border border-slate-200 space-y-2">
+                            <h3 class="font-bold text-amber-700 text-sm">🤝 PPh Pasal 23 (Jasa & Sewa)</h3>
+                            <p class="text-xs text-slate-600 leading-relaxed">Dipotong sebesar 2% (jasa/sewa) atau 15% (dividen/bunga/royalti) dari jumlah bruto. Tanpa NPWP dikenakan tarif 100% lebih tinggi (2x lipat).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <div id="mobile-bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-40 md:hidden px-2 py-2 flex justify-around items-center shadow-lg hidden-element">
+        <button onclick="Navigation.switchTab('home')" id="mob-nav-home" class="flex flex-col items-center gap-1 text-lime font-semibold text-[10px]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Beranda
+        </button>
+        <button onclick="Navigation.switchTab('pph21')" id="mob-nav-pph21" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[10px]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            PPh 21
+        </button>
+        <button onclick="Navigation.switchTab('pph22')" id="mob-nav-pph22" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[10px]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            PPh 22
+        </button>
+        <button onclick="Navigation.switchTab('pph23')" id="mob-nav-pph23" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[10px]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            PPh 23
+        </button>
+        <button onclick="Navigation.switchTab('guide')" id="mob-nav-guide" class="flex flex-col items-center gap-1 text-slate-400 font-medium text-[10px]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Panduan
+        </button>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-16 sm:bottom-6 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Core Javascript Logic & PWA Installation Controller -->
+    <script>
+        'use strict';
+
+        const PWAInstaller = {
+            deferredPrompt: null,
+            init() {
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    this.deferredPrompt = e;
+                    this.showInstallButtons(true);
+                });
+
+                window.addEventListener('appinstalled', () => {
+                    this.deferredPrompt = null;
+                    this.showInstallButtons(false);
+                    UI.showToast('PajakKita Pro berhasil di-install di perangkat Anda!');
+                });
+
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+                        self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
+                        self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+                        self.addEventListener('fetch', e => {
+                            e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+                        });
+                    `)).catch(err => console.log('SW registration skipped'));
+                }
+            },
+            showInstallButtons(show) {
+                const btnDesktop = document.getElementById('btn-install-desktop');
+                const btnMobile = document.getElementById('btn-install-mobile');
+                const banner = document.getElementById('pwa-install-banner');
+
+                if (show) {
+                    if (btnDesktop) { btnDesktop.classList.remove('hidden-element'); btnDesktop.classList.add('flex'); }
+                    if (btnMobile) btnMobile.classList.remove('hidden-element');
+                    if (banner) banner.classList.remove('hidden-element');
+                } else {
+                    if (btnDesktop) { btnDesktop.classList.add('hidden-element'); btnDesktop.classList.remove('flex'); }
+                    if (btnMobile) btnMobile.classList.add('hidden-element');
+                    if (banner) banner.classList.add('hidden-element');
+                }
+            },
+            async promptInstall() {
+                if (this.deferredPrompt) {
+                    this.deferredPrompt.prompt();
+                    const { outcome } = await this.deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        this.deferredPrompt = null;
+                        this.showInstallButtons(false);
+                    }
+                } else {
+                    UI.showToast('Tip: Gunakan menu browser (Titik Tiga / Share) lalu pilih "Add to Home Screen" atau "Install App".');
+                }
+            }
+        };
+
+        const AppState = {
+            user: null,
+            currentTab: 'home',
+            lastResultText: '',
+            p21CountMode: 'single',
+            employeeCounter: 0,
+            liveRates: {
+                USD: 18139,
+                SAR: 4837,
+                CNY: 2548,
+                RUB: 198,
+                JPY: 118,
+                IDR: 1
+            },
+            rateLastUpdated: 'Acuan Oktober 2026',
+            init() {
+                const storedUser = localStorage.getItem('pajakkita_pro_user');
+                if (storedUser) {
+                    this.user = JSON.parse(storedUser);
+                }
+                this.fetchLiveExchangeRates();
+            },
+            async fetchLiveExchangeRates() {
+                try {
+                    const res = await fetch('https://open.er-api.com/v6/latest/USD');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.rates && data.rates.IDR) {
+                            const usdIdr = data.rates.IDR;
+                            this.liveRates.USD = Math.round(usdIdr);
+                            if (data.rates.SAR) this.liveRates.SAR = Math.round(usdIdr / data.rates.SAR);
+                            if (data.rates.CNY) this.liveRates.CNY = Math.round(usdIdr / data.rates.CNY);
+                            if (data.rates.RUB) this.liveRates.RUB = Math.round(usdIdr / data.rates.RUB);
+                            if (data.rates.JPY) this.liveRates.JPY = Math.round(usdIdr / data.rates.JPY);
+                            
+                            const d = new Date();
+                            this.rateLastUpdated = `Diperbarui ${d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+                        }
+                    }
+                } catch (e) {
+                    console.log('Menggunakan kurs acuan lokal terpercaya');
+                }
+                UI.updateKursInfoLabel();
+            },
+            login(username) {
+                const userData = { username, loginTime: new Date().toISOString() };
+                localStorage.setItem('pajakkita_pro_user', JSON.stringify(userData));
+                this.user = userData;
+                UI.render();
+            },
+            logout() {
+                localStorage.removeItem('pajakkita_pro_user');
+                this.user = null;
+                UI.render();
+            }
+        };
+
+        const Navigation = {
+            switchTab(tabId, direction = 'none') {
+                if (AppState.currentTab === tabId) return;
+                
+                const tabs = ['home', 'pph21', 'pph22', 'pph23', 'guide'];
+                const targetTab = document.getElementById(`tab-${tabId}`);
+                if (!targetTab) return;
+
+                document.querySelectorAll('.tab-content').forEach(el => {
+                    el.classList.add('hidden-element');
+                    el.classList.remove('tab-slide-left', 'tab-slide-right', 'fade-in');
+                });
+
+                if (direction === 'left') {
+                    targetTab.classList.add('tab-slide-left');
+                } else if (direction === 'right') {
+                    targetTab.classList.add('tab-slide-right');
+                } else {
+                    targetTab.classList.add('fade-in');
+                }
+
+                targetTab.classList.remove('hidden-element');
+                AppState.currentTab = tabId;
+
+                tabs.forEach(t => {
+                    const btn = document.getElementById(`nav-${t}`);
+                    if (btn) {
+                        btn.className = t === tabId ? "transition-colors text-lime font-semibold" : "transition-colors hover:text-lime text-slate-300";
+                    }
+                    const mobBtn = document.getElementById(`mob-nav-${t}`);
+                    if (mobBtn) {
+                        mobBtn.className = t === tabId ? "flex flex-col items-center gap-1 text-lime font-semibold text-[10px]" : "flex flex-col items-center gap-1 text-slate-400 font-medium text-[10px]";
+                    }
+                });
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+
+        const TaxEngine = {
+            getPtkpAmount(ptkp) {
+                const map = {
+                    'TK/0': 54000000,
+                    'TK/1': 58500000,
+                    'TK/2': 63000000,
+                    'TK/3': 67500000,
+                    'K/0': 58500000,
+                    'K/1': 63000000,
+                    'K/2': 67500000,
+                    'K/3': 72000000
+                };
+                return map[ptkp] || 54000000;
+            },
+
+            calculateProgressiveTax(pkp) {
+                let tax = 0;
+                let remaining = pkp;
+
+                const l1 = Math.min(remaining, 60000000);
+                tax += l1 * 0.05;
+                remaining -= l1;
+
+                if (remaining > 0) {
+                    const l2 = Math.min(remaining, 190000000);
+                    tax += l2 * 0.15;
+                    remaining -= l2;
+                }
+
+                if (remaining > 0) {
+                    const l3 = Math.min(remaining, 250000000);
+                    tax += l3 * 0.25;
+                    remaining -= l3;
+                }
+
+                if (remaining > 0) {
+                    const l4 = Math.min(remaining, 4500000000);
+                    tax += l4 * 0.30;
+                    remaining -= l4;
+                }
+
+                if (remaining > 0) {
+                    tax += remaining * 0.35;
+                }
+
+                return Math.round(tax);
+            },
+
+            calculateSinglePPh21(data) {
+                const { id, nama, ptkp, mode, brutoBulan, biayaJabatan, iuran, sudahDipotong } = data;
+                const brutoSetahun = brutoBulan * 12;
+
+                if (mode === 'bulanan') {
+                    const rate = brutoBulan > 10000000 ? 0.02 : 0.01;
+                    const tax = Math.round(brutoBulan * rate);
+                    const netBulan = brutoBulan - tax;
+                    
+                    const jurnal = [
+                        { akun: "Beban Gaji & Tunjangan", debit: brutoBulan, kredit: 0 },
+                        { akun: "Utang PPh Pasal 21", debit: 0, kredit: tax },
+                        { akun: "Kas / Bank (Take-Home Pay)", debit: 0, kredit: netBulan }
+                    ];
+
+                    const steps = [
+                        {
+                            num: 1,
+                            title: "Menghitung Penghasilan Bruto Bulanan",
+                            formula: "Penghasilan Bruto Bulanan",
+                            sub: `Rp ${brutoBulan.toLocaleString('id-ID')}`,
+                            res: `Rp ${brutoBulan.toLocaleString('id-ID')}`,
+                            desc: "Total gaji dan tunjangan karyawan dalam 1 bulan kerja."
+                        },
+                        {
+                            num: 2,
+                            title: "Menentukan Tarif Efektif Rata-rata (TER)",
+                            formula: "Penghasilan Bruto × Tarif TER Kategori A/B/C",
+                            sub: `Rp ${brutoBulan.toLocaleString('id-ID')} × ${(rate*100)}%`,
+                            res: `Rp ${tax.toLocaleString('id-ID')}`,
+                            desc: "Tarif Efektif Bulanan digunakan untuk pemotongan PPh 21 masa Jan - Nov."
+                        },
+                        {
+                            num: 3,
+                            title: "Menghitung Gaji Bersih Diterima (Take Home Pay)",
+                            formula: "Bruto Bulanan - PPh 21 TER Bulanan",
+                            sub: `Rp ${brutoBulan.toLocaleString('id-ID')} - Rp ${tax.toLocaleString('id-ID')}`,
+                            res: `Rp ${netBulan.toLocaleString('id-ID')}`,
+                            desc: "Kas bersih yang ditransfer perusahaan ke rekening karyawan."
+                        }
+                    ];
+
+                    return {
+                        id, mode, nama: nama || 'Karyawan', ptkp, brutoBulan, brutoSetahun, 
+                        biayaJabatan: 0, iuran: 0, totalPengurang: 0, nettoSetahun: brutoSetahun, 
+                        ptkpVal: this.getPtkpAmount(ptkp), pkp: 0, totalPajak: tax, selisih: tax, sudahDipotong: 0, jurnal, steps
+                    };
+                } else {
+                    const calcBiayaJabatan = Math.min(Math.round(brutoSetahun * 0.05), 6000000);
+                    const userBiayaJabatan = biayaJabatan > 0 ? Math.min(biayaJabatan, 6000000) : calcBiayaJabatan;
+                    const totalPengurang = userBiayaJabatan + iuran;
+                    const netto = Math.max(0, brutoSetahun - totalPengurang);
+                    const ptkpVal = this.getPtkpAmount(ptkp);
+                    const pkp = Math.max(0, netto - ptkpVal);
+                    const totalPajakSetahun = this.calculateProgressiveTax(pkp);
+                    const selisihKurangBayar = Math.max(0, totalPajakSetahun - sudahDipotong);
+
+                    const jurnal = [
+                        { akun: "Beban Gaji Setahun", debit: brutoSetahun, kredit: 0 },
+                        { akun: "Utang PPh Pasal 21 (Kurang Bayar Des)", debit: 0, kredit: selisihKurangBayar },
+                        { akun: "Kas / Bank / Utang Gaji", debit: 0, kredit: brutoSetahun - selisihKurangBayar }
+                    ];
+
+                    const steps = [
+                        {
+                            num: 1,
+                            title: "Menghitung Penghasilan Bruto Setahun",
+                            formula: "Penghasilan Bruto Bulanan × 12",
+                            sub: `Rp ${brutoBulan.toLocaleString('id-ID')} × 12`,
+                            res: `Rp ${brutoSetahun.toLocaleString('id-ID')}`,
+                            desc: "Total akumulasi penerimaan bruto dalam satu tahun pajak."
+                        },
+                        {
+                            num: 2,
+                            title: "Menghitung Biaya Jabatan",
+                            formula: "5% × Bruto Setahun (Maksimal Rp6.000.000/tahun)",
+                            sub: `5% × Rp ${brutoSetahun.toLocaleString('id-ID')} = Rp ${calcBiayaJabatan.toLocaleString('id-ID')} (Diambil: Rp ${userBiayaJabatan.toLocaleString('id-ID')})`,
+                            res: `Rp ${userBiayaJabatan.toLocaleString('id-ID')}`,
+                            desc: "Biaya pengetatan jabatan sesuai Pasal 21 UU PPh."
+                        },
+                        {
+                            num: 3,
+                            title: "Menghitung Total Pengurang Penghasilan",
+                            formula: "Biaya Jabatan + Iuran Pensiun/JHT",
+                            sub: `Rp ${userBiayaJabatan.toLocaleString('id-ID')} + Rp ${iuran.toLocaleString('id-ID')}`,
+                            res: `Rp ${totalPengurang.toLocaleString('id-ID')}`,
+                            desc: "Komponen yang mengurangi penghasilan bruto karyawan."
+                        },
+                        {
+                            num: 4,
+                            title: "Menghitung Penghasilan Neto Setahun",
+                            formula: "Penghasilan Bruto Setahun - Total Pengurang",
+                            sub: `Rp ${brutoSetahun.toLocaleString('id-ID')} - Rp ${totalPengurang.toLocaleString('id-ID')}`,
+                            res: `Rp ${netto.toLocaleString('id-ID')}`,
+                            desc: "Penghasilan bersih karyawan sebelum dikurangi PTKP."
+                        },
+                        {
+                            num: 5,
+                            title: "Menentukan PTKP (Penghasilan Tidak Kena Pajak)",
+                            formula: `Status PTKP: ${ptkp}`,
+                            sub: `Berdasarkan status perkawinan/tanggungan (${ptkp})`,
+                            res: `Rp ${ptkpVal.toLocaleString('id-ID')}`,
+                            desc: "Batas penghasilan yang tidak dikenakan pajak pemerintah."
+                        },
+                        {
+                            num: 6,
+                            title: "Menghitung Penghasilan Kena Pajak (PKP)",
+                            formula: "Penghasilan Neto Setahun - PTKP",
+                            sub: `Rp ${netto.toLocaleString('id-ID')} - Rp ${ptkpVal.toLocaleString('id-ID')}`,
+                            res: `Rp ${pkp.toLocaleString('id-ID')}`,
+                            desc: "Dasar pengenaan tarif pajak progresif Pasal 17."
+                        },
+                        {
+                            num: 7,
+                            title: "Menghitung PPh 21 Terutang Setahun",
+                            formula: "Tarif Progresif Pasal 17 UU PPh atas PKP",
+                            sub: `Kalkulasi lapis tarif progresif atas PKP Rp ${pkp.toLocaleString('id-ID')}`,
+                            res: `Rp ${totalPajakSetahun.toLocaleString('id-ID')}`,
+                            desc: "Total pajak penghasilan karyawan untuk masa 1 tahun penuh."
+                        },
+                        {
+                            num: 8,
+                            title: "Menghitung PPh 21 Kurang/Lebih Bayar Masa Desember",
+                            formula: "PPh 21 Setahun - PPh 21 Sudah Dipotong (Jan-Nov)",
+                            sub: `Rp ${totalPajakSetahun.toLocaleString('id-ID')} - Rp ${sudahDipotong.toLocaleString('id-ID')}`,
+                            res: `Rp ${selisihKurangBayar.toLocaleString('id-ID')}`,
+                            desc: "Sisa pajak PPh 21 yang wajib dipotong pada slip gaji Desember."
+                        }
+                    ];
+
+                    return {
+                        id, mode, nama: nama || 'Karyawan', ptkp, brutoBulan, brutoSetahun, 
+                        biayaJabatan: userBiayaJabatan, iuran, totalPengurang, nettoSetahun: netto, 
+                        ptkpVal, pkp, totalPajak: totalPajakSetahun, selisih: selisihKurangBayar, sudahDipotong, jurnal, steps
+                    };
+                }
+            },
+
+            calculatePPh22(jenis, valas, hargaValas, kurs, asuransiPct, freightPct, bmPct, usePpn, dppLokal, hasApi, isNonNpwp) {
+                let dasarPungut = 0;
+                let tarifPajak = 0.025;
+                let namaJenis = "";
+                let jurnalPembeli = [];
+                let jurnalPenjual = [];
+                let steps = [];
+
+                if (jenis === 'impor') {
+                    namaJenis = valas === 'IDR' ? "Pembelian / Impor Domestik (Rupiah)" : `Impor Barang Valas (${valas})`;
+                    const hargaRp = hargaValas * kurs;
+                    const asuransi = hargaRp * (asuransiPct / 100);
+                    const freight = hargaRp * (freightPct / 100);
+                    const cif = hargaRp + asuransi + freight;
+                    const beaMasuk = cif * (bmPct / 100);
+                    const nilaiImpor = cif + beaMasuk;
+                    dasarPungut = nilaiImpor;
+
+                    const baseTarif = hasApi ? 0.025 : 0.075;
+                    tarifPajak = isNonNpwp ? baseTarif * 2 : baseTarif;
+                    const pph22 = Math.round(dasarPungut * tarifPajak);
+                    const ppnImpor = usePpn ? Math.round(dasarPungut * 0.11) : 0;
+                    const totalKasPembeli = Math.round(nilaiImpor + pph22 + ppnImpor);
+
+                    // Jurnal 1: Pihak Pembeli / Importir
+                    jurnalPembeli = [
+                        { akun: "Persediaan Barang / Aset Impor", debit: nilaiImpor, kredit: 0 },
+                        { akun: "PPh 22 Dibayar di Muka (Kredit Pajak)", debit: pph22, kredit: 0 }
+                    ];
+                    if (usePpn) jurnalPembeli.push({ akun: "PPN Masukan", debit: ppnImpor, kredit: 0 });
+                    jurnalPembeli.push({ akun: "Kas / Bank / Utang Dagang", debit: 0, kredit: totalKasPembeli });
+
+                    // Jurnal 2: Pihak Penjual / Eksportir Domestik
+                    const kasPenjual = nilaiImpor + ppnImpor;
+                    jurnalPenjual = [
+                        { akun: "Kas / Bank / Piutang Usaha", debit: kasPenjual, kredit: 0 },
+                        { akun: "Pendapatan Penjualan", debit: 0, kredit: nilaiImpor }
+                    ];
+                    if (usePpn) jurnalPenjual.push({ akun: "PPN Keluaran", debit: 0, kredit: ppnImpor });
+
+                    steps = [
+                        {
+                            num: 1,
+                            title: "Menentukan Jenis Transaksi & Nilai Barang",
+                            formula: "Harga Valas × Kurs Pajak",
+                            sub: `${hargaValas.toLocaleString('id-ID')} ${valas} × Rp ${kurs.toLocaleString('id-ID')}`,
+                            res: `Rp ${hargaRp.toLocaleString('id-ID')}`,
+                            desc: "Konversi mata uang asing ke Rupiah menggunakan Kurs Pajak."
+                        },
+                        {
+                            num: 2,
+                            title: "Menghitung Nilai CIF (Cost, Insurance, Freight)",
+                            formula: "Harga Barang + Asuransi + Freight",
+                            sub: `Rp ${hargaRp.toLocaleString('id-ID')} + Rp ${asuransi.toLocaleString('id-ID')} (${asuransiPct}%) + Rp ${freight.toLocaleString('id-ID')} (${freightPct}%)`,
+                            res: `Rp ${cif.toLocaleString('id-ID')}`,
+                            desc: "Total nilai pabean barang impor di pelabuhan kedatangan."
+                        },
+                        {
+                            num: 3,
+                            title: "Menghitung Bea Masuk & Nilai Impor (DPP)",
+                            formula: "Nilai CIF + Bea Masuk",
+                            sub: `Rp ${cif.toLocaleString('id-ID')} + (Rp ${cif.toLocaleString('id-ID')} × ${bmPct}%)`,
+                            res: `Rp ${nilaiImpor.toLocaleString('id-ID')}`,
+                            desc: "Nilai Impor merupakan Dasar Pengenaan Pajak (DPP) PPh 22 & PPN."
+                        },
+                        {
+                            num: 4,
+                            title: "Menentukan Tarif & Menghitung PPh 22 Terutang",
+                            formula: "DPP Nilai Impor × Tarif PPh 22",
+                            sub: `Rp ${nilaiImpor.toLocaleString('id-ID')} × ${(tarifPajak*100).toFixed(2)}% (${hasApi ? 'Ber-API 2,5%' : 'Tanpa API 7,5%'}${isNonNpwp ? ' + Non-NPWP 100%' : ''})`,
+                            res: `Rp ${pph22.toLocaleString('id-ID')}`,
+                            desc: "Pemotongan pajak penghasilan atas kegiatan impor barang."
+                        }
+                    ];
+
+                    if (usePpn) {
+                        steps.push({
+                            num: 5,
+                            title: "Menghitung PPN Impor 11% (Dihitung Terpisah)",
+                            formula: "DPP Nilai Impor × 11%",
+                            sub: `Rp ${nilaiImpor.toLocaleString('id-ID')} × 11%`,
+                            res: `Rp ${ppnImpor.toLocaleString('id-ID')}`,
+                            desc: "PPN Masukan atas impor barang yang disetor ke kas negara."
+                        });
+                        steps.push({
+                            num: 6,
+                            title: "Menghitung Total Pengeluaran Kas Pembeli",
+                            formula: "Nilai Impor + PPh 22 + PPN 11%",
+                            sub: `Rp ${nilaiImpor.toLocaleString('id-ID')} + Rp ${pph22.toLocaleString('id-ID')} + Rp ${ppnImpor.toLocaleString('id-ID')}`,
+                            res: `Rp ${totalKasPembeli.toLocaleString('id-ID')}`,
+                            desc: "Total kas yang harus dikeluarkan pembeli termasuk seluruh komponen pajak."
+                        });
+                    } else {
+                        steps.push({
+                            num: 5,
+                            title: "Menghitung Total Pengeluaran Kas Pembeli",
+                            formula: "Nilai Impor + PPh 22",
+                            sub: `Rp ${nilaiImpor.toLocaleString('id-ID')} + Rp ${pph22.toLocaleString('id-ID')}`,
+                            res: `Rp ${totalKasPembeli.toLocaleString('id-ID')}`,
+                            desc: "Total kas yang dibayarkan tanpa memperhitungkan PPN 11%."
+                        });
+                    }
+
+                    return {
+                        namaJenis, dasar: nilaiImpor, tarif: tarifPajak, pajak: pph22, ppn: ppnImpor, total: totalKasPembeli, jurnalPembeli, jurnalPenjual, steps
+                    };
+                } else {
+                    dasarPungut = dppLokal;
+                    const tarifMap = {
+                        bendahara: 0.015,
+                        semen: 0.0025,
+                        kertas: 0.001,
+                        baja: 0.003,
+                        otomotif: 0.0045,
+                        farmasi: 0.003,
+                        migas: 0.0025,
+                        pertanian: 0.0025
+                    };
+                    const namaMap = {
+                        bendahara: "Bendahara Pemerintah & BUMN",
+                        semen: "Industri Semen",
+                        kertas: "Industri Kertas",
+                        baja: "Industri Baja",
+                        otomotif: "Industri Otomotif",
+                        farmasi: "Industri Farmasi",
+                        migas: "Penjualan BBM/Migas",
+                        pertanian: "Bahan Pertanian/Perkebunan"
+                    };
+
+                    namaJenis = namaMap[jenis] || "Transaksi Lain";
+                    const baseT = tarifMap[jenis] || 0.015;
+                    tarifPajak = isNonNpwp ? baseT * 2 : baseT;
+
+                    const pph22 = Math.round(dasarPungut * tarifPajak);
+                    const ppn11 = usePpn ? Math.round(dasarPungut * 0.11) : 0;
+                    let totalKas = 0;
+
+                    if (jenis === 'bendahara') {
+                        totalKas = dasarPungut;
+                        jurnalPembeli = [
+                            { akun: "Beban Pembelian / Aset", debit: dasarPungut, kredit: 0 }
+                        ];
+                        if (usePpn) jurnalPembeli.push({ akun: "PPN Masukan", debit: ppn11, kredit: 0 });
+                        jurnalPembeli.push({ akun: "Utang PPh Pasal 22 (Disetor Bendahara)", debit: 0, kredit: pph22 });
+                        if (usePpn) jurnalPembeli.push({ akun: "Utang PPN (Dipungut)", debit: 0, kredit: ppn11 });
+                        jurnalPembeli.push({ akun: "Kas / Bank (Netto ke Penjual)", debit: 0, kredit: dasarPungut - pph22 });
+
+                        jurnalPenjual = [
+                            { akun: "Kas / Bank Received", debit: dasarPungut - pph22, kredit: 0 },
+                            { akun: "PPh 22 Dibayar di Muka", debit: pph22, kredit: 0 }
+                        ];
+                        if (usePpn) jurnalPenjual.push({ akun: "PPN Masukan (Dipungut Pemungut)", debit: ppn11, kredit: 0 });
+                        jurnalPenjual.push({ akun: "Pendapatan Penjualan", debit: 0, kredit: dasarPungut });
+                        if (usePpn) jurnalPenjual.push({ akun: "PPN Keluaran", debit: 0, kredit: ppn11 });
+                    } else {
+                        totalKas = dasarPungut + pph22 + ppn11;
+                        jurnalPembeli = [
+                            { akun: "Pembelian / Persediaan Barang", debit: dasarPungut, kredit: 0 },
+                            { akun: "PPh 22 Dibayar di Muka", debit: pph22, kredit: 0 }
+                        ];
+                        if (usePpn) jurnalPembeli.push({ akun: "PPN Masukan", debit: ppn11, kredit: 0 });
+                        jurnalPembeli.push({ akun: "Kas / Bank", debit: 0, kredit: totalKas });
+
+                        jurnalPenjual = [
+                            { akun: "Kas / Bank (Diterima)", debit: totalKas, kredit: 0 },
+                            { akun: "Pendapatan Penjualan", debit: 0, kredit: dasarPungut },
+                            { akun: "Utang PPh Pasal 22 (Dipungut)", debit: 0, kredit: pph22 }
+                        ];
+                        if (usePpn) jurnalPenjual.push({ akun: "PPN Keluaran", debit: 0, kredit: ppn11 });
+                    }
+
+                    steps = [
+                        {
+                            num: 1,
+                            title: "Menentukan Jenis Kategori Transaksi",
+                            formula: `Kategori: ${namaJenis}`,
+                            sub: `Dasar Pengenaan Pajak (DPP) Transaksi`,
+                            res: `Rp ${dasarPungut.toLocaleString('id-ID')}`,
+                            desc: "Nilai acuan transaksi jual beli barang."
+                        },
+                        {
+                            num: 2,
+                            title: "Menentukan Tarif & Menghitung PPh 22",
+                            formula: "DPP × Tarif PPh 22",
+                            sub: `Rp ${dasarPungut.toLocaleString('id-ID')} × ${(tarifPajak*100).toFixed(2)}%${isNonNpwp ? ' (Sanksi Non-NPWP 100%)' : ''}`,
+                            res: `Rp ${pph22.toLocaleString('id-ID')}`,
+                            desc: "Nominal PPh 22 yang dipungut saat transaksi."
+                        }
+                    ];
+
+                    if (usePpn) {
+                        steps.push({
+                            num: 3,
+                            title: "Menghitung PPN 11% (Terpisah dari PPh 22)",
+                            formula: "DPP × 11%",
+                            sub: `Rp ${dasarPungut.toLocaleString('id-ID')} × 11%`,
+                            res: `Rp ${ppn11.toLocaleString('id-ID')}`,
+                            desc: "Pajak Pertambahan Nilai atas transaksi barang."
+                        });
+                        steps.push({
+                            num: 4,
+                            title: "Menentukan Total Hak / Kewajiban Pembayaran",
+                            formula: jenis === 'bendahara' ? "DPP - PPh 22 (Netto diterima Penjual)" : "DPP + PPh 22 + PPN 11%",
+                            sub: jenis === 'bendahara' ? `Rp ${dasarPungut.toLocaleString('id-ID')} - Rp ${pph22.toLocaleString('id-ID')}` : `Rp ${dasarPungut.toLocaleString('id-ID')} + Rp ${pph22.toLocaleString('id-ID')} + Rp ${ppn11.toLocaleString('id-ID')}`,
+                            res: `Rp ${totalKas.toLocaleString('id-ID')}`,
+                            desc: "Nominal bersih kas akhir dalam pencatatan akuntansi."
+                        });
+                    }
+
+                    return {
+                        namaJenis, dasar: dasarPungut, tarif: tarifPajak, pajak: pph22, ppn: ppn11, total: totalKas, jurnalPembeli, jurnalPenjual, steps
+                    };
+                }
+            },
+
+            calculatePPh23(jenis, bruto, isNonNpwp) {
+                let baseRate = 0.02;
+                let namaObjek = "";
+                let namaBeban = "Beban Jasa Konsultan";
+
+                if (jenis === 'jasa_konsultan') { baseRate = 0.02; namaObjek = "Jasa Konsultan / Teknik"; namaBeban = "Beban Jasa Konsultan"; }
+                else if (jenis === 'sewa_kendaraan') { baseRate = 0.02; namaObjek = "Sewa Kendaraan Operasional"; namaBeban = "Beban Sewa Kendaraan"; }
+                else if (jenis === 'dividen') { baseRate = 0.15; namaObjek = "Dividen"; namaBeban = "Beban / Pendapatan Dividen"; }
+                else if (jenis === 'bunga') { baseRate = 0.15; namaObjek = "Bunga & Royalti"; namaBeban = "Beban Bunga"; }
+                else if (jenis === 'hadiah') { baseRate = 0.15; namaObjek = "Hadiah & Penghargaan"; namaBeban = "Beban Hadiah"; }
+
+                const finalRate = isNonNpwp ? baseRate * 2 : baseRate;
+                const pajak = Math.round(bruto * finalRate);
+                const kasBersih = bruto - pajak;
+
+                const jurnalPemotong = [
+                    { akun: namaBeban, debit: bruto, kredit: 0 },
+                    { akun: "Kas / Bank", debit: 0, kredit: kasBersih },
+                    { akun: "Utang PPh Pasal 23", debit: 0, kredit: pajak }
+                ];
+
+                const jurnalDipotong = [
+                    { akun: "Kas / Bank", debit: kasBersih, kredit: 0 },
+                    { akun: "PPh 23 Dibayar di Muka (Kredit Pajak)", debit: pajak, kredit: 0 },
+                    { akun: "Pendapatan Jasa / Sewa", debit: 0, kredit: bruto }
+                ];
+
+                const steps = [
+                    {
+                        num: 1,
+                        title: "Menentukan Objek Pajak & Nilai Bruto",
+                        formula: `Objek Pajak: ${namaObjek}`,
+                        sub: `Nilai transaksi bruto sebelum dipotong pajak`,
+                        res: `Rp ${bruto.toLocaleString('id-ID')}`,
+                        desc: "Dasar Pengenaan Pemotongan PPh Pasal 23."
+                    },
+                    {
+                        num: 2,
+                        title: "Menentukan Tarif & Ketersediaan NPWP",
+                        formula: isNonNpwp ? "Tarif Standar × 200% (Tanpa NPWP)" : "Tarif Standar PPh 23",
+                        sub: `${(baseRate*100)}% ${isNonNpwp ? '× 2 (Tanpa NPWP)' : '(Memiliki NPWP)'}`,
+                        res: `${(finalRate*100).toFixed(2)}%`,
+                        desc: "Ketentuan tarif pajak sesuai kepemilikan NPWP penerima penghasilan."
+                    },
+                    {
+                        num: 3,
+                        title: "Menghitung Nominal PPh 23 Dipotong",
+                        formula: "Jumlah Bruto × Tarif PPh 23",
+                        sub: `Rp ${bruto.toLocaleString('id-ID')} × ${(finalRate*100).toFixed(2)}%`,
+                        res: `Rp ${pajak.toLocaleString('id-ID')}`,
+                        desc: "Jumlah pajak yang wajib dipotong pemotong dan disetor ke kas negara."
+                    },
+                    {
+                        num: 4,
+                        title: "Menghitung Kas Bersih Diterima Vendor",
+                        formula: "Jumlah Bruto - PPh 23 Dipotong",
+                        sub: `Rp ${bruto.toLocaleString('id-ID')} - Rp ${pajak.toLocaleString('id-ID')}`,
+                        res: `Rp ${kasBersih.toLocaleString('id-ID')}`,
+                        desc: "Kas bersih (Take-Home Payment) yang diterima penyedia jasa."
+                    }
+                ];
+
+                return {
+                    namaObjek, bruto, finalRate, pajak, kasBersih, jurnalPemotong, jurnalDipotong, steps
+                };
+            },
+
+            copyResult(type) {
+                if (!AppState.lastResultText) return;
+                document.execCommand('copy');
+                UI.showToast('Hasil perhitungan disalin!');
+            }
+        };
+
+        const UI = {
+            elements: {
+                viewAuth: document.getElementById('view-auth'),
+                viewApp: document.getElementById('view-app'),
+                formAuth: document.getElementById('form-auth'),
+                inputUsername: document.getElementById('input-username'),
+                btnLogout: document.getElementById('btn-logout'),
+                btnLogoutMob: document.getElementById('btn-logout-mob'),
+                mobileBottomNav: document.getElementById('mobile-bottom-nav'),
+                toastContainer: document.getElementById('toast-container'),
+                
+                formPph21: document.getElementById('form-pph21'),
+                p21KaryawanContainer: document.getElementById('p21-karyawan-container'),
+                p21AddMoreWrapper: document.getElementById('p21-add-more-wrapper'),
+                resPph21: document.getElementById('res-pph21'),
+
+                formPph22: document.getElementById('form-pph22'),
+                resPph22: document.getElementById('res-pph22'),
+                p22BadgeJenis: document.getElementById('p22-badge-jenis'),
+                p22OutDasar: document.getElementById('p22-out-dasar'),
+                p22OutTarif: document.getElementById('p22-out-tarif'),
+                p22OutPajak: document.getElementById('p22-out-pajak'),
+                p22OutPpn: document.getElementById('p22-out-ppn'),
+                p22OutTotal: document.getElementById('p22-out-total'),
+                p22JournalPembeli: document.getElementById('p22-journal-pembeli'),
+                p22JournalPenjual: document.getElementById('p22-journal-penjual'),
+                p22StepsContainer: document.getElementById('p22-steps-container'),
+
+                formPph23: document.getElementById('form-pph23'),
+                resPph23: document.getElementById('res-pph23'),
+                p23BadgeNpwp: document.getElementById('p23-badge-npwp'),
+                p23OutBruto: document.getElementById('p23-out-bruto'),
+                p23OutTarif: document.getElementById('p23-out-tarif'),
+                p23OutPajak: document.getElementById('p23-out-pajak'),
+                p23OutNetto: document.getElementById('p23-out-netto'),
+                p23JournalPemotong: document.getElementById('p23-journal-pemotong'),
+                p23JournalDipotong: document.getElementById('p23-journal-dipotong'),
+                p23StepsContainer: document.getElementById('p23-steps-container')
+            },
+
+            getNumericValue(id) {
+                const el = document.getElementById(id);
+                if(!el) return 0;
+                const val = el.value.replace(/\./g, '');
+                return parseFloat(val) || 0;
+            },
+
+            handleValasChange() {
+                const valas = document.getElementById('p22-valas').value;
+                const kursInput = document.getElementById('p22-kurs');
+                if (kursInput) {
+                    const rate = AppState.liveRates[valas] || 1;
+                    kursInput.value = rate.toLocaleString('id-ID');
+                }
+            },
+
+            updateKursInfoLabel() {
+                const label = document.getElementById('p22-kurs-info');
+                if (label) {
+                    label.textContent = `Live Kurs API: ${AppState.rateLastUpdated}`;
+                }
+            },
+
+            switchP21CountMode(mode) {
+                AppState.p21CountMode = mode;
+                if (mode === 'single') {
+                    this.elements.p21AddMoreWrapper.classList.add('hidden-element');
+                    this.elements.p21KaryawanContainer.innerHTML = '';
+                    AppState.employeeCounter = 0;
+                    this.addP21EmployeeCard(true);
+                } else {
+                    this.elements.p21AddMoreWrapper.classList.remove('hidden-element');
+                    if (this.elements.p21KaryawanContainer.children.length === 1) {
+                        this.addP21EmployeeCard();
+                    }
+                }
+            },
+
+            addP21EmployeeCard(isFirst = false) {
+                AppState.employeeCounter++;
+                const empId = AppState.employeeCounter;
+                
+                const card = document.createElement('div');
+                card.id = `p21-emp-card-${empId}`;
+                card.className = "p-5 bg-bone rounded-2xl border border-slate-200 space-y-4 relative fade-in";
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                        <span class="text-xs font-bold text-navy uppercase tracking-wider">Karyawan #${empId}</span>
+                        ${!isFirst && AppState.p21CountMode === 'multi' ? `<button type="button" onclick="UI.removeP21EmployeeCard(${empId})" class="text-xs text-red-600 hover:text-red-800 font-bold px-2 py-1 bg-red-50 rounded-lg border border-red-100">Hapus</button>` : ''}
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Nama Pegawai</label>
+                            <input type="text" id="p21-nama-${empId}" value="${isFirst ? 'Andi' : 'Karyawan ' + empId}" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-lime outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Status PTKP</label>
+                            <select id="p21-ptkp-${empId}" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-lime focus:border-lime outline-none">
+                                <option value="TK/0">TK/0 (Rp 54 Juta)</option>
+                                <option value="TK/1">TK/1 (Rp 58.5 Juta)</option>
+                                <option value="TK/2">TK/2 (Rp 63 Juta)</option>
+                                <option value="TK/3">TK/3 (Rp 67.5 Juta)</option>
+                                <option value="K/0">K/0 (Rp 58.5 Juta)</option>
+                                <option value="K/1" selected>K/1 (Rp 63 Juta)</option>
+                                <option value="K/2">K/2 (Rp 67.5 Juta)</option>
+                                <option value="K/3">K/3 (Rp 72 Juta)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Mode Perhitungan</label>
+                            <select id="p21-mode-${empId}" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-lime focus:border-lime outline-none">
+                                <option value="bulanan">Bulanan (TER)</option>
+                                <option value="tahunan" selected>Masa Pajak Terakhir / Rekonsiliasi (Pasal 17)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Penghasilan Bruto (Bulanan)</label>
+                            <input type="text" inputmode="numeric" id="p21-bruto-bulan-${empId}" required class="currency-input w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-lime outline-none" placeholder="13.000.000">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Biaya Jabatan Setahun (Maks 6jt)</label>
+                            <input type="text" inputmode="numeric" id="p21-biaya-jabatan-${empId}" class="currency-input w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-lime outline-none" placeholder="0 (Auto 5%)">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Iuran Pensiun / Pengurang (Setahun)</label>
+                            <input type="text" inputmode="numeric" id="p21-iuran-${empId}" class="currency-input w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-lime outline-none" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">PPh 21 Sudah Dipotong (Jan - Nov)</label>
+                            <input type="text" inputmode="numeric" id="p21-sudah-dipotong-${empId}" class="currency-input w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-lime outline-none" placeholder="0">
+                        </div>
+                    </div>
+                `;
+
+                this.elements.p21KaryawanContainer.appendChild(card);
+                this.bindCurrencyFormatting(card);
+            },
+
+            removeP21EmployeeCard(empId) {
+                const card = document.getElementById(`p21-emp-card-${empId}`);
+                if (card) {
+                    card.remove();
+                }
+            },
+
+            bindCurrencyFormatting(container = document) {
+                container.querySelectorAll('.currency-input').forEach(input => {
+                    input.addEventListener('input', function(e) {
+                        let value = e.target.value.replace(/[^0-9]/g, '');
+                        if(value) {
+                            e.target.value = parseInt(value, 10).toLocaleString('id-ID');
+                        } else {
+                            e.target.value = '';
+                        }
+                    });
+                });
+            },
+            
+            toggleP22Form() {
+                const jenis = document.getElementById('p22-jenis').value;
+                const formImpor = document.getElementById('container-form-impor');
+                const formLokal = document.getElementById('container-form-lokal');
+                const wrapperApi = document.getElementById('wrapper-api');
+
+                if (jenis === 'impor') {
+                    formImpor.classList.remove('hidden-element');
+                    formLokal.classList.add('hidden-element');
+                    wrapperApi.classList.remove('hidden-element');
+                } else {
+                    formImpor.classList.add('hidden-element');
+                    formLokal.classList.remove('hidden-element');
+                    wrapperApi.classList.add('hidden-element');
+                }
+            },
+            
+            showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                const bgColor = type === 'error' ? 'bg-red-500 text-white' : 'batik-pattern text-bone';
+                
+                toast.className = `toast-enter ${bgColor} px-4 py-3 rounded-2xl shadow-xl text-xs font-medium flex items-center gap-2 border border-slate-700/50`;
+                toast.innerHTML = `<span>${message}</span>`;
+                
+                this.elements.toastContainer.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.replace('toast-enter', 'toast-leave');
+                    toast.addEventListener('animationend', () => toast.remove());
+                }, 2800);
+            },
+
+            renderStepsHTML(steps) {
+                let html = '';
+                steps.forEach(s => {
+                    html += `
+                    <div class="notebook-step p-4 rounded-xl shadow-sm space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-navy">Langkah ${s.num}. ${s.title}</span>
+                            <span class="text-[11px] font-mono font-bold text-lime-hover bg-lime/10 px-2.5 py-0.5 rounded-full">${s.res}</span>
+                        </div>
+                        <div class="text-[11px] font-mono text-slate-500">${s.formula}</div>
+                        <div class="text-xs font-mono font-semibold text-slate-800 bg-slate-50 p-2 rounded-lg border border-slate-200/80 my-1">
+                            ${s.sub}
+                        </div>
+                        <p class="text-[11px] text-slate-600 italic">Keterangan: ${s.desc}</p>
+                    </div>`;
+                });
+                return html;
+            },
+
+            render() {
+                if (AppState.user) {
+                    this.elements.viewAuth.classList.add('hidden-element');
+                    this.elements.viewApp.classList.remove('hidden-element');
+                    this.elements.btnLogout.classList.remove('hidden-element');
+                    this.elements.btnLogoutMob.classList.remove('hidden-element');
+                    this.elements.mobileBottomNav.classList.remove('hidden-element');
+                    Navigation.switchTab(AppState.currentTab);
+                } else {
+                    this.elements.viewApp.classList.add('hidden-element');
+                    this.elements.viewAuth.classList.remove('hidden-element');
+                    this.elements.btnLogout.classList.add('hidden-element');
+                    this.elements.btnLogoutMob.classList.add('hidden-element');
+                    this.elements.mobileBottomNav.classList.add('hidden-element');
+                }
+            },
+
+            bindEvents() {
+                this.bindCurrencyFormatting();
+
+                this.elements.formAuth.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const username = this.elements.inputUsername.value.trim();
+                    if (username) {
+                        AppState.login(username);
+                        this.elements.inputUsername.value = '';
+                        this.showToast(`Selamat datang, ${username}!`);
+                    } else {
+                        this.showToast('Nama pengguna tidak boleh kosong!', 'error');
+                    }
+                });
+
+                const handleLogout = () => {
+                    AppState.logout();
+                    this.showToast('Berhasil keluar sistem.');
+                };
+
+                this.elements.btnLogout.addEventListener('click', handleLogout);
+                this.elements.btnLogoutMob.addEventListener('click', handleLogout);
+
+                // PPh 21 Submit
+                this.elements.formPph21.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const cards = this.elements.p21KaryawanContainer.children;
+                    if(cards.length === 0) {
+                        this.showToast('Tambahkan minimal 1 data karyawan!', 'error');
+                        return;
+                    }
+
+                    let results = [];
+                    for (let card of cards) {
+                        const empId = card.id.replace('p21-emp-card-', '');
+                        const data = {
+                            id: empId,
+                            nama: document.getElementById(`p21-nama-${empId}`)?.value || `Karyawan ${empId}`,
+                            ptkp: document.getElementById(`p21-ptkp-${empId}`)?.value || 'TK/0',
+                            mode: document.getElementById(`p21-mode-${empId}`)?.value || 'tahunan',
+                            brutoBulan: this.getNumericValue(`p21-bruto-bulan-${empId}`),
+                            biayaJabatan: this.getNumericValue(`p21-biaya-jabatan-${empId}`),
+                            iuran: this.getNumericValue(`p21-iuran-${empId}`),
+                            sudahDipotong: this.getNumericValue(`p21-sudah-dipotong-${empId}`)
+                        };
+
+                        const res = TaxEngine.calculateSinglePPh21(data);
+                        results.push(res);
+                    }
+
+                    let htmlRes = '';
+                    results.forEach(res => {
+                        let journalRows = '';
+                        let totD = 0, totK = 0;
+                        res.jurnal.forEach(l => {
+                            totD += l.debit; totK += l.kredit;
+                            journalRows += `<tr>
+                                <td class="p-2.5 text-slate-800">${l.akun}</td>
+                                <td class="p-2.5 text-right font-mono">${l.debit ? 'Rp ' + l.debit.toLocaleString('id-ID') : '-'}</td>
+                                <td class="p-2.5 text-right font-mono">${l.kredit ? 'Rp ' + l.kredit.toLocaleString('id-ID') : '-'}</td>
+                            </tr>`;
+                        });
+                        journalRows += `<tr class="bg-slate-50 font-bold"><td class="p-2.5">Total Seimbang</td><td class="p-2.5 text-right font-mono">Rp ${totD.toLocaleString('id-ID')}</td><td class="p-2.5 text-right font-mono">Rp ${totK.toLocaleString('id-ID')}</td></tr>`;
+
+                        const stepsHtml = this.renderStepsHTML(res.steps);
+
+                        htmlRes += `
+                        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 sm:p-8 fade-in space-y-5">
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                <div>
+                                    <h3 class="text-base sm:text-lg font-bold text-navy">Rincian & PPh 21: ${res.nama}</h3>
+                                    <span class="text-xs text-slate-500">Status PTKP: ${res.ptkp} (${res.mode === 'bulanan' ? 'Bulanan TER' : 'Rekonsiliasi Tahunan'})</span>
+                                </div>
+                                <span class="bg-lime/20 text-navy font-bold text-[11px] px-3 py-1 rounded-full uppercase">${res.mode}</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <div class="p-3 bg-bone rounded-2xl border border-slate-200">
+                                    <span class="text-[10px] text-slate-500 block uppercase tracking-wider">Bruto Bulanan</span>
+                                    <span class="text-sm font-bold text-navy">Rp ${res.brutoBulan.toLocaleString('id-ID')}</span>
+                                </div>
+                                <div class="p-3 bg-bone rounded-2xl border border-slate-200">
+                                    <span class="text-[10px] text-slate-500 block uppercase tracking-wider">Bruto Setahun</span>
+                                    <span class="text-sm font-bold text-navy">Rp ${res.brutoSetahun.toLocaleString('id-ID')}</span>
+                                </div>
+                                <div class="p-3 bg-bone rounded-2xl border border-slate-200">
+                                    <span class="text-[10px] text-slate-500 block uppercase tracking-wider">Biaya Jabatan</span>
+                                    <span class="text-sm font-bold text-slate-700">Rp ${res.biayaJabatan.toLocaleString('id-ID')}</span>
+                                </div>
+                                <div class="p-3 bg-bone rounded-2xl border border-slate-200">
+                                    <span class="text-[10px] text-slate-500 block uppercase tracking-wider">Iuran Pensiun</span>
+                                    <span class="text-sm font-bold text-slate-700">Rp ${res.iuran.toLocaleString('id-ID')}</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div class="p-3 bg-bone rounded-2xl border border-slate-200">
+                                    <span class="text-[10px] text-slate-500 block uppercase tracking-wider">Penghasilan Netto Setahun</span>
+                                    <span class="text-sm font-bold text-navy">Rp ${res.nettoSetahun.toLocaleString('id-ID')}</span>
+                                </div>
+                                <div class="p-3 bg-bone rounded-2xl border border-slate-200">
+                                    <span class="text-[10px] text-slate-500 block uppercase tracking-wider">Nilai PTKP (${res.ptkp})</span>
+                                    <span class="text-sm font-bold text-slate-700">Rp ${res.ptkpVal.toLocaleString('id-ID')}</span>
+                                </div>
+                                <div class="p-3 bg-blue-50 rounded-2xl border border-blue-100">
+                                    <span class="text-[10px] text-blue-700 block uppercase tracking-wider font-semibold">Penghasilan Kena Pajak (PKP)</span>
+                                    <span class="text-sm font-bold text-blue-700">Rp ${res.pkp.toLocaleString('id-ID')}</span>
+                                </div>
+                            </div>
+
+                            <div class="p-4 bg-navy text-bone rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                                <div>
+                                    <span class="text-[11px] text-slate-300 block uppercase tracking-wider">PPh 21 ${res.mode === 'bulanan' ? 'Bulanan' : 'Setahun / Des'}</span>
+                                    <span class="text-xl sm:text-2xl font-extrabold text-lime">Rp ${res.selisih.toLocaleString('id-ID')}</span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <span class="text-xs font-bold text-navy uppercase tracking-wider block">Jurnal Akuntansi Penggajian (${res.nama})</span>
+                                <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+                                    <table class="w-full text-xs text-left">
+                                        <thead class="bg-slate-50 text-slate-500 border-b">
+                                            <tr>
+                                                <th class="p-2.5">Keterangan Akun</th>
+                                                <th class="p-2.5 text-right">Debit</th>
+                                                <th class="p-2.5 text-right">Kredit</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100">${journalRows}</tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- LANGKAH PENGERJAAN PPH 21 PER KARYAWAN -->
+                            <div class="space-y-3 pt-3 border-t border-slate-200">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 bg-blue-600 rounded-full"></div>
+                                    <h4 class="text-xs font-bold text-navy uppercase tracking-wider">Langkah Pengerjaan Catatan Akuntansi (${res.nama})</h4>
+                                </div>
+                                <div class="space-y-3">${stepsHtml}</div>
+                            </div>
+                        </div>`;
+                    });
+
+                    this.elements.resPph21.innerHTML = htmlRes;
+                    this.elements.resPph21.classList.remove('hidden-element');
+                    this.showToast('Perhitungan & Langkah P21 berhasil!');
+                });
+
+                // PPh 22 Submit
+                this.elements.formPph22.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const jenis = document.getElementById('p22-jenis').value;
+                    const valas = document.getElementById('p22-valas').value;
+                    const hargaValas = this.getNumericValue('p22-harga-valas');
+                    const kurs = this.getNumericValue('p22-kurs') || 1;
+                    const asuransiPct = parseFloat(document.getElementById('p22-asuransi-pct').value) || 0;
+                    const freightPct = parseFloat(document.getElementById('p22-freight-pct').value) || 0;
+                    const bmPct = parseFloat(document.getElementById('p22-bm-pct').value) || 0;
+                    const usePpn = document.getElementById('p22-use-ppn').checked;
+                    const dppLokal = this.getNumericValue('p22-dpp-lokal');
+                    const hasApi = document.getElementById('p22-api').checked;
+                    const isNonNpwp = document.getElementById('p22-nonpwp').checked;
+
+                    const res = TaxEngine.calculatePPh22(jenis, valas, hargaValas, kurs, asuransiPct, freightPct, bmPct, usePpn, dppLokal, hasApi, isNonNpwp);
+
+                    this.elements.p22BadgeJenis.textContent = res.namaJenis;
+                    this.elements.p22OutDasar.textContent = `Rp ${res.dasar.toLocaleString('id-ID')}`;
+                    this.elements.p22OutTarif.textContent = `${(res.tarif * 100).toFixed(2)}%`;
+                    this.elements.p22OutPajak.textContent = `Rp ${res.pajak.toLocaleString('id-ID')}`;
+                    this.elements.p22OutPpn.textContent = usePpn ? `Rp ${res.ppn.toLocaleString('id-ID')}` : 'Tidak Dihitung';
+                    this.elements.p22OutTotal.textContent = `Rp ${res.total.toLocaleString('id-ID')}`;
+
+                    let jPembeliHtml = '';
+                    let totD1 = 0, totK1 = 0;
+                    res.jurnalPembeli.forEach(l => {
+                        totD1 += l.debit; totK1 += l.kredit;
+                        jPembeliHtml += `<tr>
+                            <td class="p-2 text-slate-800">${l.akun}</td>
+                            <td class="p-2 text-right text-slate-600">${l.debit ? 'Rp ' + l.debit.toLocaleString('id-ID') : '-'}</td>
+                            <td class="p-2 text-right text-slate-600">${l.kredit ? 'Rp ' + l.kredit.toLocaleString('id-ID') : '-'}</td>
+                        </tr>`;
+                    });
+                    jPembeliHtml += `<tr class="bg-slate-50 font-bold"><td class="p-2">Total Seimbang</td><td class="p-2 text-right">Rp ${totD1.toLocaleString('id-ID')}</td><td class="p-2 text-right">Rp ${totK1.toLocaleString('id-ID')}</td></tr>`;
+                    this.elements.p22JournalPembeli.innerHTML = jPembeliHtml;
+
+                    let jPenjualHtml = '';
+                    let totD2 = 0, totK2 = 0;
+                    res.jurnalPenjual.forEach(l => {
+                        totD2 += l.debit; totK2 += l.kredit;
+                        jPenjualHtml += `<tr>
+                            <td class="p-2 text-slate-800">${l.akun}</td>
+                            <td class="p-2 text-right text-slate-600">${l.debit ? 'Rp ' + l.debit.toLocaleString('id-ID') : '-'}</td>
+                            <td class="p-2 text-right text-slate-600">${l.kredit ? 'Rp ' + l.kredit.toLocaleString('id-ID') : '-'}</td>
+                        </tr>`;
+                    });
+                    jPenjualHtml += `<tr class="bg-slate-50 font-bold"><td class="p-2">Total Seimbang</td><td class="p-2 text-right">Rp ${totD2.toLocaleString('id-ID')}</td><td class="p-2 text-right">Rp ${totK2.toLocaleString('id-ID')}</td></tr>`;
+                    this.elements.p22JournalPenjual.innerHTML = jPenjualHtml;
+
+                    this.elements.p22StepsContainer.innerHTML = this.renderStepsHTML(res.steps);
+
+                    this.elements.resPph22.classList.remove('hidden-element');
+                    this.showToast('PPh 22 & Langkah Pengerjaan berhasil!');
+                });
+
+                // PPh 23 Submit
+                this.elements.formPph23.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const jenis = document.getElementById('p23-jenis').value;
+                    const bruto = this.getNumericValue('p23-bruto');
+                    const isNonNpwp = document.getElementById('p23-nonpwp').checked;
+
+                    const res = TaxEngine.calculatePPh23(jenis, bruto, isNonNpwp);
+
+                    this.elements.p23BadgeNpwp.textContent = isNonNpwp ? "TIDAK ADA NPWP (2x Tarif)" : "Memiliki NPWP";
+                    this.elements.p23BadgeNpwp.className = isNonNpwp ? "bg-red-100 text-red-800 font-bold text-[11px] px-3 py-1 rounded-full uppercase" : "bg-amber-100 text-amber-800 font-bold text-[11px] px-3 py-1 rounded-full uppercase";
+                    
+                    this.elements.p23OutBruto.textContent = `Rp ${res.bruto.toLocaleString('id-ID')}`;
+                    this.elements.p23OutTarif.textContent = `${(res.finalRate * 100).toFixed(2)}%`;
+                    this.elements.p23OutPajak.textContent = `Rp ${res.pajak.toLocaleString('id-ID')}`;
+                    this.elements.p23OutNetto.textContent = `Rp ${res.kasBersih.toLocaleString('id-ID')}`;
+
+                    let j1 = '';
+                    let td1 = 0, tk1 = 0;
+                    res.jurnalPemotong.forEach(l => {
+                        td1 += l.debit; tk1 += l.kredit;
+                        j1 += `<tr><td class="p-2">${l.akun}</td><td class="p-2 text-right">${l.debit ? 'Rp ' + l.debit.toLocaleString('id-ID') : '-'}</td><td class="p-2 text-right">${l.kredit ? 'Rp ' + l.kredit.toLocaleString('id-ID') : '-'}</td></tr>`;
+                    });
+                    j1 += `<tr class="bg-slate-50 font-bold"><td class="p-2">Total</td><td class="p-2 text-right">Rp ${td1.toLocaleString('id-ID')}</td><td class="p-2 text-right">Rp ${tk1.toLocaleString('id-ID')}</td></tr>`;
+                    this.elements.p23JournalPemotong.innerHTML = j1;
+
+                    let j2 = '';
+                    let td2 = 0, tk2 = 0;
+                    res.jurnalDipotong.forEach(l => {
+                        td2 += l.debit; tk2 += l.kredit;
+                        j2 += `<tr><td class="p-2">${l.akun}</td><td class="p-2 text-right">${l.debit ? 'Rp ' + l.debit.toLocaleString('id-ID') : '-'}</td><td class="p-2 text-right">${l.kredit ? 'Rp ' + l.kredit.toLocaleString('id-ID') : '-'}</td></tr>`;
+                    });
+                    j2 += `<tr class="bg-slate-50 font-bold"><td class="p-2">Total</td><td class="p-2 text-right">Rp ${td2.toLocaleString('id-ID')}</td><td class="p-2 text-right">Rp ${tk2.toLocaleString('id-ID')}</td></tr>`;
+                    this.elements.p23JournalDipotong.innerHTML = j2;
+
+                    this.elements.p23StepsContainer.innerHTML = this.renderStepsHTML(res.steps);
+
+                    this.elements.resPph23.classList.remove('hidden-element');
+                    this.showToast('PPh 23 & Langkah Pengerjaan berhasil!');
+                });
+
+                this.initMobileSwipeGesture();
+            },
+
+            initMobileSwipeGesture() {
+                let touchStartX = 0;
+                let touchStartY = 0;
+                let touchEndX = 0;
+                let touchEndY = 0;
+
+                const taxModules = ['pph21', 'pph22', 'pph23'];
+
+                document.addEventListener('touchstart', (e) => {
+                    const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+                    if (['input', 'select', 'textarea', 'button'].includes(activeTag)) return;
+
+                    touchStartX = e.changedTouches[0].screenX;
+                    touchStartY = e.changedTouches[0].screenY;
+                }, { passive: true });
+
+                document.addEventListener('touchend', (e) => {
+                    const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+                    if (['input', 'select', 'textarea', 'button'].includes(activeTag)) return;
+
+                    touchEndX = e.changedTouches[0].screenX;
+                    touchEndY = e.changedTouches[0].screenY;
+                    
+                    const deltaX = touchEndX - touchStartX;
+                    const deltaY = touchEndY - touchStartY;
+
+                    if (Math.abs(deltaX) > 75 && Math.abs(deltaY) < 35) {
+                        const currentIndex = taxModules.indexOf(AppState.currentTab);
+                        if (currentIndex !== -1) {
+                            if (deltaX < 0 && currentIndex < taxModules.length - 1) {
+                                Navigation.switchTab(taxModules[currentIndex + 1], 'left');
+                            } else if (deltaX > 0 && currentIndex > 0) {
+                                Navigation.switchTab(taxModules[currentIndex - 1], 'right');
+                            }
+                        }
+                    }
+                }, { passive: true });
+            },
+
+            init() {
+                this.bindEvents();
+                this.addP21EmployeeCard(true);
+                PWAInstaller.init();
+                this.render();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            AppState.init();
+            UI.init();
+        });
+    </script>
+</body>
+</html>
